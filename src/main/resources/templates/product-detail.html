@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Détail Produit</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <div th:replace="fragments/header :: header"></div>
+  <div class="container product-detail">
+    <h2 th:text="${product.title}"></h2>
+
+    <!-- Affichage de l'image via le handler /images/** -->
+    <div class="product-image" th:if="${product.imageUrl}">
+      <img th:src="@{/images/{fn}(fn=${product.imageUrl})}"
+           alt="Image du produit" class="img-fluid"/>
+    </div>
+
+    <p th:text="${product.description}"></p>
+    <p>Prix initial : <strong th:text="${product.initialPrice}"></strong></p>
+    <p>Fini le : <strong th:text="${endDateFormatted}"></strong></p>
+
+    <div sec:authorize="hasRole('BUYER')" class="place-bid">
+      <form th:action="@{|/bids/place/${product.id}|}" method="post">
+        <button type="submit" class="btn btn-primary">Enchérir (+10%)</button>
+      </form>
+    </div>
+
+    <a th:href="@{/products}" class="btn btn-secondary mt-2">← Retour à l’accueil</a>
+  </div>
+ 
+</body>
+</html>
+

@@ -1,0 +1,157 @@
+/* style.css */
+/* HEADER GLOBAL */
+.site-header {
+  background-color: #343a40;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Conteneur flex pour aligner gauche/milieu/droite */
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Logo / titre applicatif */
+.site-logo {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* Navigation centrale */
+.header-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Liens de nav */
+.nav-link {
+  color: #f8f9fa;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  transition: background 0.2s;
+}
+
+.nav-link:hover {
+  background-color: #495057;
+  border-radius: 4px;
+}
+
+/* Actions utilisateur (droite) */
+.header-right {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Bouton logout stylé comme un lien */
+.logout-form {
+  margin: 0;
+}
+
+.nav-button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.nav-button:hover {
+  background-color: #0056b3;
+}
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
+}
+
+header {
+  background: #333;
+  color: #fff;
+  padding: 1rem;
+}
+
+header a {
+  color: #fff;
+  text-decoration: none;
+  margin-right: 1rem;
+}
+
+.container {
+  max-width: 800px;
+  margin: 2rem auto;
+  background: #fff;
+  padding: 2rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+table, th, td {
+  border: 1px solid #ccc;
+}
+
+th, td {
+  padding: 0.5rem;
+  text-align: left;
+}
+
+button, input[type="submit"] {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+button:hover, input[type="submit"]:hover {
+  background: #0056b3;
+}
+
+form div {
+  margin-bottom: 1rem;
+}
+
+input, select {
+  width: 100%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+/* Small tweaks pour rechercher et image */
+.search-form {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+.form-control-inline {
+  padding: 0.375rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.btn-primary-inline {
+  background: #007bff; color: #fff; border:none; padding:0.375rem 0.75rem; border-radius:4px;
+}
+.btn-secondary-inline {
+  background: #6c757d; color: #fff; border:none; padding:0.375rem 0.75rem; border-radius:4px;
+}
+.table img {
+  object-fit: cover;
+  border-radius: 4px;
+}
+

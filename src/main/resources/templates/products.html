@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Produits</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <div th:replace="fragments/header :: header"></div>
+  <div class="container">
+    
+    <form th:action="@{/products}" method="get" class="search-form">
+      <input type="text" name="keyword" placeholder="Nom de produit ..." 
+             th:value="${keyword}" class="form-control-inline"/>
+      <input type="text" name="category" placeholder="Catégorie..." 
+             th:value="${category}" class="form-control-inline"/>
+      <button type="submit" class="btn btn-primary-inline">Rechercher</button>
+      <a th:href="@{/products}" class="btn btn-secondary-inline">Réinitialiser</a>
+    </form>
+    <h2>Enchères en cours</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Catégorie</th> 
+          <th>Prix initial</th>
+          <th>Fin</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr th:each="p : ${products}">
+        <td>
+        
+          <a th:href="@{|/products/${p.id}|}"
+             th:text="${p.title}" class="link"></a>
+        </td>
+        <td th:text="${p.category}"></td> 
+        <td th:text="${p.initialPrice}"></td>
+        <td th:text="${#temporals.format(p.endDate, 'dd/MM/yyyy HH:mm')}"></td>
+        <td>
+          <a th:href="@{|/bids/${p.id}|}" class="btn btn-primary small">Voir enchères</a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
