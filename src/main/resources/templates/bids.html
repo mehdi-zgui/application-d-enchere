@@ -3,26 +3,58 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
-  <title>Enchères</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Historique des enchères — Auction App</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
   <div th:replace="fragments/header :: header"></div>
+
   <div class="container">
-    <h2>Enchères pour <span th:text="${product.title}"></span></h2>
+
+    <div class="section-header">
+      <h2>
+        Enchères
+        <span style="font-style:italic;font-weight:400;color:var(--gold);"
+              th:text="'— ' + ${product.title}"></span>
+      </h2>
+      <a th:href="@{|/products/${product.id}|}" class="btn btn-secondary small">
+        ← Retour au lot
+      </a>
+    </div>
+
     <table class="table">
       <thead>
-        <tr><th>Acheteur</th><th>Montant</th><th>Date</th></tr>
+        <tr>
+          <th>#</th>
+          <th>Acheteur</th>
+          <th>Montant</th>
+          <th>Date &amp; heure</th>
+        </tr>
       </thead>
       <tbody>
-      <tr th:each="b : ${bids}">
-        <td th:text="${b.buyer.username}"></td>
-        <td th:text="${b.amount}"></td>
-        <td th:text="${#temporals.format(b.bidTime, 'dd/MM/yyyy HH:mm')}"></td>
-      </tr>
+        <tr th:each="b, stat : ${bids}">
+          <td style="color:var(--text-dim);font-size:0.8rem;" th:text="${stat.count}"></td>
+          <td th:text="${b.buyer.username}"></td>
+          <td style="color:var(--gold);font-family:'Playfair Display',serif;"
+              th:text="${b.amount} + ' €'"></td>
+          <td style="font-size:0.85rem;"
+              th:text="${#temporals.format(b.bidTime, 'dd/MM/yyyy HH:mm')}"></td>
+        </tr>
       </tbody>
     </table>
-    <a th:href="@{/products}" class="btn btn-secondary mt-2">Retour à l’accueil</a>
+
+    <!-- Empty state -->
+    <div th:if="${#lists.isEmpty(bids)}"
+         style="text-align:center;padding:2.5rem 0;color:var(--text-muted);">
+      <p style="font-family:'Playfair Display',serif;font-size:1.15rem;margin-bottom:0.4rem;">
+        Aucune enchère pour l'instant
+      </p>
+      <p style="font-size:0.85rem;">Soyez le premier à faire une offre sur ce lot.</p>
+    </div>
+
+    <a th:href="@{/products}" class="btn btn-secondary mt-2">← Retour aux lots</a>
+
   </div>
 </body>
 </html>

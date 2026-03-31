@@ -3,32 +3,52 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
-  <title>Signup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inscription — Auction App</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
   <div th:replace="fragments/header :: header"></div>
-  <div class="container">
-    <h2>Signup</h2>
+
+  <div class="container auth-container">
+
+    <div class="auth-logo">
+      <h1>◆ Auction App</h1>
+      <p>Créez votre compte</p>
+    </div>
+
     <form th:action="@{/signup}" th:object="${user}" method="post">
       <div class="form-group">
-        <label>Username</label>
-        <input class="form-control" type="text" th:field="*{username}" required/>
+        <label for="username">Identifiant</label>
+        <input id="username" class="form-control" type="text" th:field="*{username}"
+               placeholder="Choisissez un identifiant" required/>
       </div>
+
       <div class="form-group">
-        <label>Password</label>
-        <input class="form-control" type="password" th:field="*{password}" required/>
+        <label for="password">Mot de passe</label>
+        <input id="password" class="form-control" type="password" th:field="*{password}"
+               placeholder="••••••••" required/>
       </div>
+
       <div class="form-group">
-        <label>Role</label>
-        <select class="form-control" th:field="*{role}">
+        <label for="role">Rôle</label>
+        <select id="role" class="form-control" th:field="*{role}">
           <option value="BUYER">Acheteur</option>
           <option value="SELLER">Vendeur</option>
         </select>
       </div>
-      <button type="submit" class="btn btn-primary">Signup</button>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+        Créer le compte
+      </button>
     </form>
+
+    <hr class="divider"/>
+    <p style="text-align:center;font-size:0.85rem;color:var(--text-muted);">
+      Déjà inscrit ?
+      <a th:href="@{/login}" style="color:var(--gold);">Se connecter</a>
+    </p>
+
   </div>
 </body>
 </html>
-

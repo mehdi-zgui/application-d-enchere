@@ -3,33 +3,72 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
-  <title>Détail Produit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${product.title} + ' — Auction App'">Détail — Auction App</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
   <div th:replace="fragments/header :: header"></div>
+
   <div class="container product-detail">
+
+    <!-- Category pill + back -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <span style="font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;
+                   color:var(--gold-dim);background:var(--surface-2);
+                   padding:0.3rem 0.75rem;border-radius:3px;border:1px solid var(--border);"
+            th:text="${product.category}"></span>
+      <a th:href="@{/products}" class="btn btn-secondary small">← Retour aux lots</a>
+    </div>
+
+    <!-- Title -->
     <h2 th:text="${product.title}"></h2>
 
-    <!-- Affichage de l'image via le handler /images/** -->
+    <!-- Image -->
     <div class="product-image" th:if="${product.imageUrl}">
       <img th:src="@{/images/{fn}(fn=${product.imageUrl})}"
            alt="Image du produit" class="img-fluid"/>
     </div>
 
-    <p th:text="${product.description}"></p>
-    <p>Prix initial : <strong th:text="${product.initialPrice}"></strong></p>
-    <p>Fini le : <strong th:text="${endDateFormatted}"></strong></p>
+    <!-- Description -->
+    <p th:text="${product.description}" style="margin-top:1.25rem;line-height:1.75;"></p>
 
+    <hr class="divider"/>
+
+    <!-- Details grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+      <div>
+        <p style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.35rem;">
+          Mise à prix
+        </p>
+        <div class="price-badge" th:text="${product.initialPrice} + ' €'"></div>
+      </div>
+      <div>
+        <p style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.35rem;">
+          Clôture des enchères
+        </p>
+        <p style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--text);"
+           th:text="${endDateFormatted}"></p>
+      </div>
+    </div>
+
+    <!-- Bid action (BUYER only) -->
     <div sec:authorize="hasRole('BUYER')" class="place-bid">
+      <p>Vous êtes connecté en tant qu'acheteur</p>
       <form th:action="@{|/bids/place/${product.id}|}" method="post">
-        <button type="submit" class="btn btn-primary">Enchérir (+10%)</button>
+        <button type="submit" class="btn btn-primary">
+          Enchérir (+10 %)
+        </button>
       </form>
     </div>
 
-    <a th:href="@{/products}" class="btn btn-secondary mt-2">← Retour à l’accueil</a>
+    <!-- View bids link -->
+    <div style="margin-top:1.25rem;">
+      <a th:href="@{|/bids/${product.id}|}" class="btn btn-secondary">
+        Voir toutes les enchères
+      </a>
+    </div>
+
   </div>
- 
 </body>
 </html>
-

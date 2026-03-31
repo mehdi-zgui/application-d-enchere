@@ -3,26 +3,49 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connexion — Auction App</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
   <div th:replace="fragments/header :: header"></div>
-  <div class="container">
-    <h2>Login</h2>
+
+  <div class="container auth-container">
+
+    <div class="auth-logo">
+      <h1>◆ Auction App</h1>
+      <p>Accédez à votre compte</p>
+    </div>
+
     <form th:action="@{/login}" method="post">
       <div class="form-group">
-        <label>Username</label>
-        <input class="form-control" type="text" name="username" required/>
+        <label for="username">Identifiant</label>
+        <input id="username" class="form-control" type="text" name="username" placeholder="Votre identifiant" required/>
       </div>
+
       <div class="form-group">
-        <label>Password</label>
-        <input class="form-control" type="password" name="password" required/>
+        <label for="password">Mot de passe</label>
+        <input id="password" class="form-control" type="password" name="password" placeholder="••••••••" required/>
       </div>
-      <button type="submit" class="btn btn-primary">Login</button>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+        Se connecter
+      </button>
     </form>
-    <p th:if="${param.error}" class="error">Invalid credentials</p>
-    <p th:if="${param.logout}" class="success">You have been logged out.</p>
+
+    <p th:if="${param.error}" class="error">
+      Identifiants invalides. Veuillez réessayer.
+    </p>
+    <p th:if="${param.logout}" class="success">
+      Vous avez été déconnecté avec succès.
+    </p>
+
+    <hr class="divider"/>
+    <p style="text-align:center;font-size:0.85rem;color:var(--text-muted);">
+      Pas encore de compte ?
+      <a th:href="@{/signup}" style="color:var(--gold);">Créer un compte</a>
+    </p>
+
   </div>
 </body>
 </html>

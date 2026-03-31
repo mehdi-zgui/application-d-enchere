@@ -3,37 +3,68 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
-  <title>Ajouter Produit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ajouter un produit — Auction App</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
   <div th:replace="fragments/header :: header"></div>
+
   <div class="container">
-    <h2>Ajouter un produit</h2>
+
+    <div class="section-header">
+      <h2>Mettre en vente</h2>
+      <a th:href="@{/products}" class="btn btn-secondary">← Retour</a>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:0.875rem;margin-top:-1rem;margin-bottom:1.75rem;">
+      Renseignez les informations de votre article pour le soumettre aux enchères.
+    </p>
+
     <form th:action="@{/products/add}" th:object="${product}" method="post" enctype="multipart/form-data">
-      <div class="form-group">
-        <label>Titre</label>
-        <input class="form-control" type="text" th:field="*{title}" required/>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+        <div class="form-group" style="grid-column:1/-1;">
+          <label>Titre de l'article</label>
+          <input class="form-control" type="text" th:field="*{title}"
+                 placeholder="Ex : Montre de poche en or 18k, circa 1920" required/>
+        </div>
+
+        <div class="form-group" style="grid-column:1/-1;">
+          <label>Description</label>
+          <textarea class="form-control" th:field="*{description}" rows="5"
+                    placeholder="Décrivez l'état, la provenance, les dimensions…"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Prix de départ (€)</label>
+          <input class="form-control" type="number" th:field="*{initialPrice}"
+                 step="0.01" placeholder="0.00" required/>
+        </div>
+
+        <div class="form-group">
+          <label>Catégorie</label>
+          <input class="form-control" type="text" th:field="*{category}"
+                 placeholder="Ex : Horlogerie, Art, Bijoux…" required/>
+        </div>
+
+        <div class="form-group" style="grid-column:1/-1;">
+          <label>Photo de l'article</label>
+          <input id="imageFile" type="file" name="imageFile" class="form-control"
+                 accept="image/*"/>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea class="form-control" th:field="*{description}" rows="5"></textarea>
+
+      <hr class="divider"/>
+
+      <div style="display:flex;gap:0.75rem;align-items:center;">
+        <button type="submit" class="btn btn-primary">
+          Mettre en vente
+        </button>
+        <a th:href="@{/products}" class="btn btn-secondary">Annuler</a>
       </div>
-      <div class="form-group">
-        <label for="imageFile">Image</label>
-        <input id="imageFile" type="file" name="imageFile" class="form-control"/>
-      </div>
-      <div class="form-group">
-        <label>Prix initial</label>
-        <input class="form-control" type="number" th:field="*{initialPrice}" step="0.01" required/>
-      </div>
-      <div class="form-group">
-        <label>Catégorie</label>
-        <input class="form-control" type="text" th:field="*{category}" required/>
-      </div>
-      <button type="submit" class="btn btn-primary">Ajouter</button>
+
     </form>
-    <a th:href="@{/products}" class="btn btn-secondary mt-2">Retour à l’accueil</a>
   </div>
 </body>
 </html>
