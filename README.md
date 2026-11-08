@@ -2,7 +2,7 @@
 
 Backend Java 17 / Spring Boot 3.5.16, Spring Security et JPA/MySQL.
 Les contrôleurs renvoient des DTO JSON ; les entités JPA restent internes.
-Les vues Thymeleaf et les anciennes routes HTML ont été supprimées.
+
 
 ## Démarrage
 
