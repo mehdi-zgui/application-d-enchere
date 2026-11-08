@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface BidRepository extends JpaRepository<Bid, Long> {
+    java.util.Optional<Bid> findFirstByProductOrderByAmountDesc(Product product);
     List<Bid> findByProductOrderByAmountDesc(Product product);
 }

@@ -1,161 +1,111 @@
-# 🏷️ Application d’Enchères (Auction App)
+# API REST d'enchères
 
-Une application web d’enchères en ligne développée avec **Spring Boot**, **Thymeleaf**, **Spring Security**, et **Spring Data JPA**.
+Backend Java 17 / Spring Boot 3.5.16, Spring Security et JPA/MySQL.
+Les contrôleurs renvoient des DTO JSON ; les entités JPA restent internes.
+Les vues Thymeleaf et les anciennes routes HTML ont été supprimées.
 
-Les utilisateurs peuvent :
-- Créer un compte (venduer ou acheteur)
-- Publier des produits à enchérir avec une image
-- Rechercher et filtrer les produits par nom ou catégorie
-- Placer des enchères jusqu’à une date d’expiration fixe (3 jours)
-- Voir la liste des produits et les détails d’un produit
+## Démarrage
 
----
+Prérequis : Java 17+, Maven, MySQL et le schéma existant.
+Configurer DB_URL, DB_USERNAME et DB_PASSWORD dans l'environnement.
+DB_URL vaut par défaut jdbc:mysql://localhost:3306/auction_db?serverTimezone=UTC.
+Aucun mot de passe de base n'est fourni par défaut.
 
-## 🧱 Fonctionnalités principales
-
-✔️ Authentification (login/signup + rôles SELLER / BUYER)  
-✔️ Upload d’images pour les produits  
-✔️ Recherche par mot-clé + filtre par catégorie  
-✔️ Gestion des enchères jusqu’à une durée fixe (3 jours)  
-✔️ Suppression automatique des produits expirés  
-✔️ Navigation organisée avec header/footer fragmentés  
-✔️ Pagination simple (facultatif à implémenter si souhaité)
-
----
-
-## 📁 Structure du projet
-
-application-d-enchere/
-├── src/
-│ ├── main/
-│ │ ├── java/com/example/auction/
-│ │ │ ├── AuctionAppApplication.java
-│ │ │ ├── config/
-│ │ │ │ ├── SecurityConfig.java
-│ │ │ │ ├── WebMvcConfig.java
-│ │ │ │ └── FileStorageConfig.java
-│ │ │ ├── controller/
-│ │ │ │ ├── AuthController.java
-│ │ │ │ ├── ProductController.java
-│ │ │ │ └── BidController.java
-│ │ │ ├── model/
-│ │ │ │ ├── User.java
-│ │ │ │ ├── Product.java
-│ │ │ │ └── Bid.java
-│ │ │ ├── repository/
-│ │ │ └── service/
-│ │ ├── resources/
-│ │ │ ├── application.properties
-│ │ │ └── templates/
-│ │ │ ├── fragments/
-│ │ │ │ ├── header.html
-│ │ │ │ └── footer.html
-│ │ │ ├── login.html
-│ │ │ ├── signup.html
-│ │ │ ├── products.html
-│ │ │ ├── product-detail.html
-│ │ │ └── add-product.html
-└── pom.xml
-
-
-## 🔧 Prérequis
-
-Avant d’installer :
-
-- **Java 17+**
-- **Maven**
-- **MySQL** (ou autre base de données compatible JPA)
-
----
-
-## ⚙️ Configuration (application.properties)
-
-properties
-# Database
-spring.datasource.url=jdbc:mysql://localhost:3306/auctiondb?serverTimezone=UTC
-spring.datasource.username=ton_user
-spring.datasource.password=ton_mdp
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-
-# Upload d’images
-file.upload-dir=uploads
-
-🚀 Installation & lancement
-
-    Clone ton repo :
-
-git clone https://github.com/mehdi-zgui/application-d-enchere.git
-cd application-d-enchere
-
-    Compile et lance l’app :
-
-mvn clean install
+~~~sh
+mvn test
 mvn spring-boot:run
+~~~
 
-    Ouvre dans ton navigateur :
+Les tests utilisent H2 et ne nécessitent pas MySQL. Pour une base locale vide,
+on peut démarrer avec --spring.jpa.hibernate.ddl-auto=update ; en production,
+gérer explicitement les migrations de schéma.
+Avant une exposition publique, configurer le proxy pour limiter le débit des
+requêtes, notamment sur l'inscription et la connexion.
+UPLOAD_DIR configure le stockage des images (uploads par défaut).
+En production, utiliser HTTPS et SESSION_COOKIE_SECURE=true.
 
-👉 http://localhost:8080/products
-📌 Points techniques
+## Authentification
 
-🔹 Upload d’images
+Sessions HTTP (cookie JSESSIONID, expiration après 30 minutes) avec CSRF activé.
+Le client conserve les cookies et récupère GET /api/auth/csrf avant les écritures.
+Envoyer la valeur token dans l'en-tête indiqué par headerName.
+Récupérer un nouveau token après connexion et après déconnexion.
+Aucun JWT n'est nécessaire. Le frontend doit partager l'origine de l'API
+(par exemple via un reverse proxy) ; CORS n'est pas ouvert par défaut.
 
-Les images sont stockées dans un dossier local uploads/, servi en ressources statiques grâce à :
+| Méthode | Route | Corps / résultat |
+| --- | --- | --- |
+| GET | /api/auth/csrf | Objet token et headerName ; accessible sans connexion |
+| POST | /api/auth/signup | JSON username, password, role ; 201 avec utilisateur |
+| POST | /api/auth/login | Formulaire URL-encoded username/password ; 200 JSON |
+| GET | /api/auth/me | Utilisateur connecté |
+| POST | /api/auth/logout | 204 et invalidation de session |
 
-registry.addResourceHandler("/images/**")
-        .addResourceLocations("file:" + uploadDir + "/");
+L'inscription accepte seulement BUYER ou SELLER. Le mot de passe comporte de
+8 à 72 caractères ; BCrypt le hache. Les DTO n'exposent jamais son hash.
+Une inscription ne connecte pas automatiquement l'utilisateur.
+Le login garde le format standard de Spring Security :
+Content-Type: application/x-www-form-urlencoded.
 
-Et affichées dans Thymeleaf :
+## Produits et enchères
 
-<img th:src="@{/images/{fn}(fn=${product.imageUrl})}" />
+Toutes ces routes exigent une connexion.
 
+| Méthode | Route | Accès / comportement |
+| --- | --- | --- |
+| GET | /api/products?keyword=...&category=... | Recherche, tableau JSON |
+| GET | /api/products/{id} | Détail, 404 si absent |
+| POST | /api/products | SELLER ; 201 avec en-tête Location |
+| GET | /api/products/{id}/bids | Enchères triées par montant décroissant |
+| POST | /api/products/{id}/bids | BUYER ; corps vide ; 201 avec enchère |
+| GET | /images/{filename} | Image du produit |
 
-🔹 Enchères + Fin fixe
+Exemple de corps JSON pour créer un produit :
 
-La date de fin est définie à Instant.now().plus(3 jours) lors de l’ajout.
-
-
-🔹 Suppression automatique des produits expirés
-
-Une tâche planifiée (@Scheduled) supprime les produits expirés :
-
-@Scheduled(cron = "0 0 2 * * *")
-public void purgeExpiredAuctions() {
-    Instant now = Instant.now();
-    productRepository.deleteByEndDateBefore(now);
+~~~json
+{
+  "title": "Ordinateur",
+  "description": "Très bon état",
+  "initialPrice": 100.00,
+  "category": "INFORMATIQUE"
 }
+~~~
 
-🔹 Formatage des dates dans Thymeleaf
+La catégorie est un texte libre de 255 caractères maximum (par exemple : Horlogerie).
+Le vendeur et la date de fin (dans trois jours, UTC) sont fixés côté serveur.
+Pour joindre une image, envoyer multipart/form-data avec une partie product
+de type application/json contenant le même objet et une partie imageFile.
+PNG et JPEG uniquement, 5 Mo maximum, 20 mégapixels maximum.
+Les images sont décodées, réencodées en PNG et enregistrées sous un nom aléatoire.
 
-Dans le controller détail :
+Chaque enchère augmente le prix courant de 10 %, arrondi au centime supérieur.
+Un verrou pessimiste sur le produit sérialise les enchères concurrentes.
+Les enchères expirées sont refusées (409), et un vendeur ne peut pas enchérir
+sur son propre produit. La purge horaire existante est conservée ;
+auction.purge.enabled=false permet de la désactiver.
 
-String formatted = DateTimeFormatter
-    .ofPattern("dd/MM/yyyy HH:mm")
-    .withZone(ZoneId.systemDefault())
-    .format(product.getEndDate());
+Les erreurs utilisent application/problem+json :
+400 données invalides, 401 connexion requise, 403 droits/CSRF,
+404 ressource absente, 409 conflit, 413 fichier trop volumineux.
+Les erreurs de validation contiennent une liste errors (field, message).
 
-m.addAttribute("endDateFormatted", formatted);
+## Exemple curl
 
+Conserver le fichier cookies.txt entre les commandes ; copier le token renvoyé
+dans TOKEN (puis le renouveler après la connexion).
 
-🧠 Bonnes pratiques
-
-✔️ Préférer Instant pour la gestion des dates en backend (UTC)
-✔️ Formulaires bien configurés avec enctype="multipart/form-data"
-✔️ Sécurité Spring Security pour les rôles et protection CSRF
-✔️ Thymeleaf fragments pour header/footer uniformes
-
-
-🧪 Test manuel
-
-  Enregistrer un vendeur puis ajouter un produit avec image
-
-  Consulter la liste, rechercher par mot-clé ou catégorie
-
-  Voir la page détail et vérifier l’image + date formatée
-
-  Attendre 3 jours ou changer endDate manuellement pour tester la purge
-
-
-📄 Licence
-
-Projet personnel — à adapter selon ton choix si tu veux partager publiquement.
+~~~sh
+curl -c cookies.txt http://localhost:8080/api/auth/csrf
+curl -b cookies.txt -c cookies.txt -H "X-CSRF-TOKEN: TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"vendeur","password":"password123","role":"SELLER"}' \
+  http://localhost:8080/api/auth/signup
+curl -b cookies.txt -c cookies.txt -H "X-CSRF-TOKEN: TOKEN" \
+  --data-urlencode "username=vendeur" --data-urlencode "password=password123" \
+  http://localhost:8080/api/auth/login
+curl -b cookies.txt -c cookies.txt http://localhost:8080/api/auth/csrf
+curl -b cookies.txt -H "X-CSRF-TOKEN: NOUVEAU_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Ordinateur","initialPrice":100,"category":"INFORMATIQUE"}' \
+  http://localhost:8080/api/products
+~~~

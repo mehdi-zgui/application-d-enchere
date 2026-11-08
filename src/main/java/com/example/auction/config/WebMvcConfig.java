@@ -14,6 +14,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Serve /images/** from the uploads folder
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:" + uploadDir + "/");
+                .addResourceLocations(java.nio.file.Path.of(uploadDir).toAbsolutePath().toUri().toString() + "/");
     }
 }

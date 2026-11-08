@@ -1,93 +1,42 @@
 package com.example.auction.controller;
 
-import com.example.auction.model.Product;
-import com.example.auction.model.User;
+import com.example.auction.dto.ApiDtos.*;
 import com.example.auction.service.ProductService;
-import com.example.auction.service.UserService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import jakarta.validation.Valid;
+import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.net.URI;
+import java.util.List;
 
-import java.nio.file.*;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-
-@Controller
-@RequestMapping("/products")
+@RestController
+@RequestMapping("/api/products")
 public class ProductController {
-
-    private final ProductService ps;
-    private final UserService us;
-
-    @Value("${file.upload-dir}")
-    private String uploadDir;
-
-    public ProductController(ProductService ps, UserService us) {
-        this.ps = ps;
-        this.us = us;
-    }
+    private final ProductService products;
+    public ProductController(ProductService products) { this.products = products; }
 
     @GetMapping
-    public String list(@RequestParam(required=false) String keyword,
-                       @RequestParam(required=false) String category,
-                       Model m) {
-        m.addAttribute("products", ps.search(keyword, category));
-        m.addAttribute("keyword", keyword);
-        m.addAttribute("category", category);
-        return "products";
-    }
-
-    @GetMapping("/add")
-    public String addForm(Model m) {
-        m.addAttribute("product", new Product());
-        return "add-product";
-    }
-
-    @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public String addSubmit(@ModelAttribute Product product,
-                            @RequestParam("imageFile") MultipartFile file,
-                            @AuthenticationPrincipal UserDetails ud) throws Exception {
-        // Upload de l’image
-        if (!file.isEmpty()) {
-            String filename = System.currentTimeMillis() + "_"
-                              + Paths.get(file.getOriginalFilename()).getFileName();
-            Path dest = Paths.get(uploadDir).resolve(filename);
-            Files.copy(file.getInputStream(), dest, StandardCopyOption.REPLACE_EXISTING);
-            product.setImageUrl(filename);
-        }
-        // Assignation du vendeur
-        User seller = us.findByUsername(ud.getUsername()).orElseThrow();
-        product.setSeller(seller);
-        // Fin de l’enchère dans 3 jours (UTC)
-        Instant nowUtc = Instant.now();
-        product.setEndDate(nowUtc.plus(3, ChronoUnit.DAYS));
-        ps.save(product);
-        return "redirect:/products";
+    public List<ProductView> list(@RequestParam(required=false) String keyword,
+                                  @RequestParam(required=false) String category) {
+        return products.search(keyword, category);
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model m) {
-        // 1) Récupère le produit
-        Product product = ps.findById(id);
+    public ProductView detail(@PathVariable Long id) { return products.detail(id); }
 
-        // 2) Le met dans le modèle
-        m.addAttribute("product", product);
+    @PostMapping(consumes=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ProductView> create(@Valid @RequestBody ProductInput input, Authentication auth) {
+        return created(products.create(input, null, auth.getName()));
+    }
 
-        // 3) Formate l’Instant en chaîne « dd/MM/yyyy HH:mm » dans le fuseau système
-        String formatted = DateTimeFormatter
-            .ofPattern("dd/MM/yyyy HH:mm")
-            .withZone(ZoneId.systemDefault())
-            .format(product.getEndDate());
-        m.addAttribute("endDateFormatted", formatted);
+    @PostMapping(consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductView> createWithImage(@Valid @RequestPart("product") ProductInput input,
+            @RequestPart(value="imageFile", required=false) MultipartFile image, Authentication auth) {
+        return created(products.create(input, image, auth.getName()));
+    }
 
-        return "product-detail";
+    private ResponseEntity<ProductView> created(ProductView product) {
+        return ResponseEntity.created(URI.create("/api/products/" + product.id())).body(product);
     }
 }
-
